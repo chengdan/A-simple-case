@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>驾校宝典</title>
+    <style>
+        body {
+            padding-bottom: 100px;
+        }
+
+        .box {
+            margin-left: 200px;
+        }
+
+        .title {
+            width: 50%;
+        }
+
+        .now {
+            display: none;
+        }
+
+        .page {
+            margin-left: 400px;
+            margin-top: 100px;
+        }
+
+        .li {
+            width: 20px;
+            height: 20px;
+            border: 1px solid #000;
+            float: left;
+            margin-left: 10px;
+            text-align: center;
+        }
+
+        .li.bg {
+            background-color: cornflowerblue;
+        }
+        .dis{
+            display: none;
+        }
+    </style>
+</head>
+<body>
+<div class="box"></div>
+<div class="page"></div>
+<script type="text/html" id="tpl">
+    {{each data as value index}}
+    <div class="title">
+        <h4>第{{page*10+index+1}}题：{{value.question}}</h4>
+        <img src="{{value.url}}" alt="">
+        <p>
+            <input type="radio" name="answer" value="A:{{value.item1}}">
+            A:{{value.item1}}
+        </p>
+        <p>
+            <input type="radio" name="answer" value="B:{{value.item2}}">
+            B:{{value.item2}}
+        </p>
+        <p class="{{value.item3===''?'now':''}}">
+            <input type="radio" name="answer" value="C:{{value.item3}}">
+            C:{{value.item3}}
+        </p>
+        <p class="{{value.item4===''?'now':''}}">
+            <input type="radio" name="answer" value="D:{{value.item4}}">
+            D:{{value.item4}}
+        </p>
+
+        <div class="dis">
+            <p>解析：{{value.explains}}</p>
+            <p class="p">答案：<span style="color: red;">{{value.answer}}</span></p>
+        </div>
+    </div>
+    {{/each}}
+</script>
+<script type="text/html" id="tpl2">
+    <% for(var i = 0; i < data.count; i++){ %>
+    <div class="{{i===0?'li bg':'li'}}">{{i+1}}</div>
+    <%}%>
+</script>
+<script src="template-web.js"></script>
+<script src="jquery.js"></script>
+<script>
+    $(function () {
+//        获取数据
+        $.ajax({
+            type: "GET",
+            url: "http://v.juhe.cn/jztk/query",
+            data: {
+                key: "0010d4b5c7a236e82e503eb5827a0aae",
+                subject: 1,
+                model: "c1"
+            },
+            dataType: "JSONP",
+            success: function (data) {
+                //将答案转化成ABC
+                for (let i = 0; i < data.result.length; i++) {
+                    if (data.result[i].answer === '1') {
+                        data.result[i].answer = 'A';
+                    } else if (data.result[i].answer === '2') {
+                        data.result[i].answer = 'B';
+                    } else if (data.result[i].answer === '3') {
+                        data.result[i].answer = 'C';
+                    } else if (data.result[i].answer === '4') {
+                        data.result[i].answer = 'D';
+                    }
+                }
+
+                //分页
+                let datas = data.result.slice(0, 10);
+                let one = {data: datas};
+                one.page = 0;
+                let html = template("tpl", one);
+                $(".box").html(html);
+
+
+                //渲染页数
+                let count = data.result.length / 10;
+                let two = {data: count};
+                let html2 = template("tpl2", two);
+                $(".page").html(html2);
+                for (let i = 0; i < $(".li").length; i++) {
+                    $(".li").eq(i).click(function () {
+                        $(".li").eq(i).addClass("bg").siblings().removeClass("bg");
+                        datas = data.result.slice(10 * i, 10 * (i + 1));
+                        one = {data: datas};
+                        one.page = i;
+                        let html = template("tpl", one);
+                        $(".box").html(html);
+                        console.log(one);
+                    })
+                }
+
+
+                //获取每次点击时的value与答案进行比对，错的告诉用户错了，对的告诉用户对了
+                for(let i = 0; i < $(".title").length; i++){
+                    for(let j = 0; j < $(".title").eq(i).find("input").length; j++){
+                        $(".title").eq(i).find("input").eq(j).click(function () {
+                            $(".title").eq(i).find(".dis").show();
+
+                            if($("input:radio[name='answer']:checked")){
+                              let a = $(this).val();
+                              let b = a.split(":");
+                              let answer = b[0];
+                                if(answer === $(".title").eq(i).find(".p span").html()){
+                                    $(this).parent().css("color","green");
+                                    $(".title").eq(i).find("input").attr("disabled","disabled");
+
+                               }else {
+                                    $(this).parent().css("color","red");
+                                    $(".title").eq(i).find("input").attr("disabled","disabled");
+                               }
+                            }
+                        })
+
+                    }
+                }
+            }
+        });
+    })
+</script>
+</body>
+</html>

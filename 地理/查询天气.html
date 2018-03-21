@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+</head>
+<body>
+<input type="text" placeholder="请输入要查询的城市" class="text">
+<button>查询天气</button>
+<div class="box">
+</div>
+<script type="text/html" id="tpl">
+    <div>
+        <p>位置:<span>{{result.today.city}}</span></p>
+        <p>日期：<span>{{result.today.date_y}}</span></p>
+        <p>温度：<span>{{result.today.temperature}}</span></p>
+        <p>建议：<span>{{result.today.dressing_advice}}</span></p>
+        <p>天气情况: <span>{{result.today.dressing_index}}</span></p>
+        <p>风速：<span>{{result.today.wind}}</span></p>
+    </div>
+</script>
+<script src="template-web.js"></script>
+<script src="jquery.js"></script>
+<script>
+    $(function () {
+        let city;
+        $("button").click(function () {
+            city = $("input").val();
+            $.ajax({
+                type: "GET",
+                url: "http://v.juhe.cn/weather/index?key=b4c1589fc5953546970d69acefd4e5b1",
+                data: {
+                    cityname: city,
+                },
+                dataType: "JSONP",
+                success: function (data) {
+                    console.log(data);
+                    if (data.error_code === 0) {
+                        let html = template("tpl", data);
+                        $(".box").html(html);
+                    }else{
+                        alert("请输入正确的名字")
+                    }
+                }
+            })
+        })
+    })
+</script>
+</body>
+</html>

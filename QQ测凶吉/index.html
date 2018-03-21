@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>测凶吉</title>
+</head>
+<body>
+<input type="text" placeholder="请输入你的QQ号">
+<button>测试一下</button>
+<div class="box"></div>
+<script type="text/html" id="tpl">
+    <p>关键字：{{showapi_res_body.analysis}}</p>
+    <p>描述：{{showapi_res_body.desc}}</p>
+    <p>运势：{{showapi_res_body.grade}}</p>
+    <p>分数：{{showapi_res_body.score}}</p>
+</script>
+<script src="jquery.min.js"></script>
+<script src="template-web.js"></script>
+<script>
+    $(function () {
+        $("button").click(function () {
+            var qq = $("input").val();
+            $.ajax({
+                type: "GET",
+                url: "http://route.showapi.com/863-1",
+                data: {
+                    showapi_appid: "53985",
+                    showapi_sign: "e416cdaed860433cbbc7f9a65281f291",
+                    qq: qq
+                },
+                dataType: "json",
+                success: function (data) {
+                    console.log(data);
+                    var html = template("tpl",data);
+                    $(".box").html(html);
+                }
+            })
+        })
+
+    })
+</script>
+</body>
+</html>
